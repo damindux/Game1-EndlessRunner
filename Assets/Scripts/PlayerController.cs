@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Rigidbody2D), typeof(Animator))]
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float jumpForce = 5f;
@@ -10,10 +10,12 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody2D _rb;
     private bool _isGrounded;
+    private Animator _animator;
 
     private void Start()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
     }
 
     private void Update()
@@ -24,6 +26,10 @@ public class PlayerController : MonoBehaviour
         {
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, 0f);
             _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+
         }
+
+        _animator.SetBool("isJumping", !_isGrounded);
     }
+
 }
