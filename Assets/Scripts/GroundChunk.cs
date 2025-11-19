@@ -50,11 +50,11 @@ public class GroundChunk : MonoBehaviour {
     // Spawn obstacles only if allowed
     if (!spawnObstacles) return;
 
-    // Obstacle spawning logic (max 2 per chunk)
-    int maxObstacles = 2;
+    // Obstacle spawning logic (max 1 per chunk)
+    int maxObstacles = 1;
     int obstaclesPlaced = 0;
 
-    List<int> tileIndices = new List<int>();
+    List<int> tileIndices = new();
     for (int i = 0; i < length; i++) tileIndices.Add(i);
     for (int i = 0; i < tileIndices.Count; i++) {
       int j = Random.Range(i, tileIndices.Count);
@@ -78,7 +78,7 @@ public class GroundChunk : MonoBehaviour {
   }
 
   private void CreateTile(Sprite sprite, int index) {
-    GameObject tileObj = new GameObject("Tile");
+    GameObject tileObj = new("Tile");
     tileObj.transform.SetParent(tileContainer);
     tileObj.transform.localPosition = new Vector3(index * tileWidth, 0f, 0f);
 
