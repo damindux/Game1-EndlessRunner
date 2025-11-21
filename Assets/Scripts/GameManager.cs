@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour {
 	public static GameManager I;
 
 	[SerializeField] private TMP_Text scoreText;
+	[SerializeField] private TMP_Text highScoreText;
 	[SerializeField] private GameObject gameOverScreen;
 
 	private float _score;
@@ -20,11 +21,23 @@ public class GameManager : MonoBehaviour {
 	private void Update() {
 		AddScore();
 		scoreText.text = "SCORE: " + GetScore();
+		highScoreText.text = "HIGH SCORE: " + GetHighScore();
+
+		int currentScore = GetScore();
+		if (currentScore > GetHighScore()) {
+			PlayerPrefs.SetInt("HighScore", currentScore);
+		}
+	}
+
+	private void OnApplicationQuit() {
+		PlayerPrefs.Save();
 	}
 
 	private void AddScore() => _score += Time.deltaTime;
 
 	private int GetScore() => (int)_score;
+
+	private int GetHighScore() => PlayerPrefs.GetInt("HighScore", 0);
 
 	public void GameOver() {
 		if (_gameOver) return;
