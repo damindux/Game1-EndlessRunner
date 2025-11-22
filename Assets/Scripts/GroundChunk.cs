@@ -10,35 +10,62 @@ public class GroundChunk : MonoBehaviour {
   public float tileWidth = 1f;
   public string sortingLayerName = "Foreground";
   public int sortingOrder = 0;
-  public float obstacleHeight = 1f;
 
-  private Transform tileContainer;
-  private int currentLength = 0;
-  private List<GameObject> spawnedObstacles = new();
+  private Transform _tileContainer;
+  private int _currentLength = 0;
+  private readonly List<GameObject> _spawnedObstacles = new();
 
   private void Awake() {
-    tileContainer = transform.Find("Tiles");
+    _tileContainer = transform.Find("Tiles");
+  }
+
+  private void OnDisable() {
+    _currentLength = 0;
   }
 
   public void Build(int length, List<GameObject> obstaclePool, float obstacleChance, bool spawnObstacles = true) {
-    // Clear previous tiles
-    while (tileContainer.childCount > 0) {
-      if (Application.isPlaying)
-        Destroy(tileContainer.GetChild(0).gameObject);
-      else
-        DestroyImmediate(tileContainer.GetChild(0).gameObject);
-    }
-
     // Recycle previous obstacles
     RecycleObstacles(obstaclePool);
 
-    currentLength = length;
+    _currentLength = length;
 
-    // Build tiles
-    CreateTile(leftTile, 0);
-    for (int i = 1; i < length - 1; i++)
-      CreateTile(middleTile, i);
-    CreateTile(rightTile, length - 1);
+    // Ensure tile container
+    if (_tileContainer == null) _tileContainer = transform.Find("Tiles");
+
+    // Collect existing tile children for reuse
+    var existing = new List<Transform>();
+    for (int i = 0; i < _tileContainer.childCount; i++) existing.Add(_tileContainer.GetChild(i));
+
+    // Ensure we have exactly 'length' active tile objects (reuse where possible)
+    for (int i = 0; i < length; i++) {
+      GameObject tileObj;
+      SpriteRenderer sr;
+      if (i < existing.Count) {
+        tileObj = existing[i].gameObject;
+        tileObj.SetActive(true);
+        sr = tileObj.GetComponent<SpriteRenderer>();
+        if (sr == null) sr = tileObj.AddComponent<SpriteRenderer>();
+      }
+      else {
+        tileObj = new GameObject("Tile");
+        tileObj.transform.SetParent(_tileContainer);
+        sr = tileObj.AddComponent<SpriteRenderer>();
+      }
+
+      // set sprite and ordering
+      if (i == 0) sr.sprite = leftTile;
+      else if (i == length - 1) sr.sprite = rightTile;
+      else sr.sprite = middleTile;
+      sr.sortingLayerName = sortingLayerName;
+      sr.sortingOrder = sortingOrder;
+
+      tileObj.transform.localPosition = new Vector3(i * tileWidth, 0f, 0f);
+    }
+
+    // Disable any extra tiles left over from previous larger length
+    for (int i = length; i < existing.Count; i++) {
+      existing[i].gameObject.SetActive(false);
+    }
 
     // Adjust collider
     var col = GetComponent<BoxCollider2D>();
@@ -68,10 +95,11 @@ public class GroundChunk : MonoBehaviour {
       GameObject obstacle = GetPooledObstacle(obstaclePool);
       if (obstacle == null) continue;
 
-      obstacle.transform.SetParent(tileContainer);
-      obstacle.transform.localPosition = new Vector3(i * tileWidth, obstacleHeight, 0f);
+      obstacle.transform.SetParent(_tileContainer);
+      var renderer = obstacle.GetComponent<SpriteRenderer>();
+      obstacle.transform.localPosition = new Vector3(i * tileWidth, renderer.bounds.size.y, 0f);
       obstacle.SetActive(true);
-      spawnedObstacles.Add(obstacle);
+      _spawnedObstacles.Add(obstacle);
 
       obstaclesPlaced++;
     }
@@ -79,7 +107,7 @@ public class GroundChunk : MonoBehaviour {
 
   private void CreateTile(Sprite sprite, int index) {
     GameObject tileObj = new("Tile");
-    tileObj.transform.SetParent(tileContainer);
+    tileObj.transform.SetParent(_tileContainer);
     tileObj.transform.localPosition = new Vector3(index * tileWidth, 0f, 0f);
 
     SpriteRenderer sr = tileObj.AddComponent<SpriteRenderer>();
@@ -96,13 +124,13 @@ public class GroundChunk : MonoBehaviour {
   }
 
   public void RecycleObstacles(List<GameObject> pool) {
-    foreach (var obj in spawnedObstacles) {
+    foreach (var obj in _spawnedObstacles) {
       obj.SetActive(false);
       obj.transform.SetParent(null);
     }
-    spawnedObstacles.Clear();
+    _spawnedObstacles.Clear();
   }
 
-  public float GetLength() => currentLength * tileWidth;
+  public float GetLength() => _currentLength * tileWidth;
 }
 

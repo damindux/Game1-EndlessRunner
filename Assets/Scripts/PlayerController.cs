@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour {
     }
 
     _animator.SetBool("isJumping", !IsGrounded);
+
+    if (transform.position.y <= -6.3f || transform.position.x <= -9f) GameManager.I.GameOver();
   }
 
   private void OnCollisionEnter2D(Collision2D collision) {

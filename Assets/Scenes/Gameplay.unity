@@ -1268,7 +1268,7 @@ MonoBehaviour:
   middleTile: {fileID: 6818874880351788203, guid: 10894ea659295e14ea50182c8a5fa929, type: 3}
   rightTile: {fileID: 440191423455161426, guid: 54f01184462cb704ca677fda5d1badc5, type: 3}
   player: {fileID: 174141107}
-  poolSize: 15
+  poolSize: 20
   chunkLengthRange: {x: 4, y: 12}
   despawnDistance: 30
   spawnAheadDistance: 50
