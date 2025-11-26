@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour {
   [SerializeField] private Transform groundCheck;
   [SerializeField] private float groundCheckRadius = 0.1f;
 
+
+  private CameraController _cameraController;
   private Rigidbody2D _rb;
   private Animator _animator;
 
@@ -32,6 +34,9 @@ public class PlayerController : MonoBehaviour {
 
   private void OnCollisionEnter2D(Collision2D collision) {
     if (collision.gameObject.CompareTag("Obstacle")) {
+      _cameraController = Camera.main.GetComponent<CameraController>();
+      StartCoroutine(_cameraController.Shake(0.15f, 0.1f));
+
       GameManager.I.GameOver();
     }
   }
