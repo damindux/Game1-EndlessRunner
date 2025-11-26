@@ -6,11 +6,14 @@ public class PlayerController : MonoBehaviour {
   [SerializeField] private LayerMask groundMask;
   [SerializeField] private Transform groundCheck;
   [SerializeField] private float groundCheckRadius = 0.1f;
+  [SerializeField] private ParticleSystem right;
+  [SerializeField] private ParticleSystem left;
 
 
   private CameraController _cameraController;
   private Rigidbody2D _rb;
   private Animator _animator;
+  private bool _wasInAir;
 
   public bool IsGrounded { get; private set; }
 
@@ -27,6 +30,9 @@ public class PlayerController : MonoBehaviour {
       _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
     }
 
+    if (_rb.linearVelocityY < -0.1f)
+      _wasInAir = true;
+
     _animator.SetBool("isJumping", !IsGrounded);
 
     if (transform.position.y <= -6.3f || transform.position.x <= -9f) GameManager.I.GameOver();
@@ -38,6 +44,18 @@ public class PlayerController : MonoBehaviour {
       StartCoroutine(_cameraController.Shake(0.15f, 0.1f));
 
       GameManager.I.GameOver();
+    }
+    else if (_wasInAir && collision.gameObject.CompareTag("Ground")) {
+      left.transform.position = new Vector3(
+        transform.position.x, transform.position.y - 1f, transform.position.z);
+
+      right.transform.position = new Vector3(
+        transform.position.x, transform.position.y - 1f, transform.position.z);
+
+      left.Play();
+      right.Play();
+
+      _wasInAir = false;
     }
   }
 
